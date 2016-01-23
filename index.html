@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset='utf-8'>
+		<title>Social SPA signin example</title>
+	</head>
+	<body>
+
+		<button onclick="hello('facebook').login()">Facebook</button>
+		<button onclick="hello('windows').login()">Windows</button>
+		<button onclick="hello('google').login()">Google</button>
+
+		<script src="//cdnjs.cloudflare.com/ajax/libs/superagent/1.2.0/superagent.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/hellojs/1.10.1/hello.all.min.js"></script>
+		<script>
+			var socialToken;
+			var serverToken;
+
+			hello.on('auth.login', function (auth) {
+				// Call user information, for the given network
+				hello(auth.network).api('/me').then(function (r) {
+					// Inject it into the container
+					var label = document.getElementById('profile_' + auth.network);
+					if (!label) {
+						label = document.createElement('div');
+						label.id = 'profile_' + auth.network;
+						document.getElementById('profile').appendChild(label);
+					}
+					label.innerHTML = '<img src="' + r.thumbnail + '" /> Hey ' + r.name;
+
+					// Save the social token
+					socialToken = auth.authResponse.access_token;
+					console.log('socialToken', socialToken);
+
+					// Auth with our own server using the social token
+					authenticate(auth.network, socialToken).then(function (token) {
+						serverToken = token;
+
+						console.log('serverToken', serverToken);
+					});
+				});
+			});
+
+			hello.init({
+				facebook: FACEBOOK_CLIENT_ID,
+				windows: WINDOWS_CLIENT_ID,
+				google: GOOGLE_CLIENT_ID
+			}, {
+				redirect_uri: 'redirect.html'
+			});
+
+			function authenticate(network, socialToken) {
+				return new Promise(function (resolve, reject) {
+					request
+							.post('/api/auth')
+							.send({
+								network: network,
+								socialToken: socialToken
+							})
+							.set('Accept', 'application/json')
+							.end(function(err, res){
+									if (err) {
+										reject(err);
+									} else {
+										resolve(res);
+									}
+							});
+				});
+			}
+
+		</script>
+
+	</body>
+</html>
