@@ -51,7 +51,7 @@
 
 			function authenticate(network, socialToken) {
 				return new Promise(function (resolve, reject) {
-					request
+					superagent
 							.post('/api/auth')
 							.send({
 								network: network,
