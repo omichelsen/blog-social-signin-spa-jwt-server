@@ -67,7 +67,7 @@ function createJwt(profile) {
 }
 
 function verifyJwt(jwtString) {
-	return jwt.verify(jwtString, 'MY_PRIVATE_KEY', {
+	return jwt.verify(jwtString, 'MY_PUBLIC_KEY', {
 		issuer: 'MY_APP'
 	});
 }
